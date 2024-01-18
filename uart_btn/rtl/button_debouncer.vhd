@@ -2,6 +2,9 @@ library ieee;
 use ieee.std_logic_1164.all;
 
 entity button_debouncer is
+    generic (
+        g_DEB_CLK_CYCLES : natural
+    );
     port (
         i_clk        : in std_logic;
         i_button     : in std_logic;
@@ -10,17 +13,16 @@ entity button_debouncer is
 end entity button_debouncer;
 
 architecture rtl of button_debouncer is
-    constant c_WAIT_LIMIT : integer                         := 1000000;
-    signal r_wait_counter : integer range 0 to c_WAIT_LIMIT := 0;
-    signal r_button_state : std_logic                       := '0'; -- initially open button
+    signal r_wait_counter : integer range 0 to g_DEB_CLK_CYCLES := 0;
+    signal r_button_state : std_logic                           := '0'; -- initially open button
 
 begin
     btn_deb_proc : process (i_clk)
     begin
         if rising_edge(i_clk) then
-            if (r_wait_counter < c_WAIT_LIMIT and r_button_state /= i_button) then
+            if (r_wait_counter < g_DEB_CLK_CYCLES and r_button_state /= i_button) then
                 r_wait_counter <= r_wait_counter + 1;
-            elsif (r_wait_counter = c_WAIT_LIMIT) then
+            elsif (r_wait_counter = g_DEB_CLK_CYCLES) then
                 r_button_state <= i_button;
                 r_wait_counter <= 0;
             else
